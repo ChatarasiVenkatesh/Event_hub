@@ -114,7 +114,7 @@ export const Footer = () => {
             <span>© {currentYear} EventHub. Made with</span>
             <Heart className="h-4 w-4 text-red-500 fill-current" />
             <span>
-              for <b className="text-black text-xl">Codegnan lovers</b>.
+              for <b className="text-black text-xl">Codegnan lovers ...</b>
             </span>
           </div>
 
