@@ -1,29 +1,35 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { 
-  Calendar, 
-  Users, 
-  MapPin, 
-  Clock, 
-  Star, 
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  Calendar,
+  Users,
+  MapPin,
+  Clock,
+  Star,
   TrendingUp,
   Search,
   Filter,
   ArrowRight,
-  Plus
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
-import { formatDate, formatCurrency } from '@/lib/utils';
-import { EVENT_CATEGORIES } from '@/lib/constants';
-import { getMockEvents } from '@/data/mockData';
+  Plus,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import { formatDate, formatCurrency } from "@/lib/utils";
+import { EVENT_CATEGORIES } from "@/lib/constants";
+import { getMockEvents } from "@/data/mockData";
 
 export const HomePage = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user, userProfile } = useAuth();
@@ -34,12 +40,12 @@ export const HomePage = () => {
     const loadEvents = async () => {
       setLoading(true);
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       const mockEvents = getMockEvents();
       setEvents(mockEvents);
       setLoading(false);
     };
-    
+
     loadEvents();
   }, []);
 
@@ -52,10 +58,10 @@ export const HomePage = () => {
 
   const featuredEvents = events.slice(0, 6);
   const stats = [
-    { label: 'Active Events', value: '1,200+', icon: Calendar },
-    { label: 'Happy Attendees', value: '50K+', icon: Users },
-    { label: 'Event Organizers', value: '800+', icon: Star },
-    { label: 'Cities Covered', value: '100+', icon: MapPin }
+    { label: "Active Events", value: "1,200+", icon: Calendar },
+    { label: "Happy Attendees", value: "50K+", icon: Users },
+    { label: "Event Organizers", value: "800+", icon: Star },
+    { label: "Cities Covered", value: "100+", icon: MapPin },
   ];
 
   return (
@@ -63,7 +69,7 @@ export const HomePage = () => {
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-secondary/5">
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-        
+
         <div className="relative container mx-auto px-4 py-20 lg:py-32">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -71,7 +77,7 @@ export const HomePage = () => {
             transition={{ duration: 0.8 }}
             className="text-center max-w-4xl mx-auto"
           >
-            <motion.h1 
+            <motion.h1
               className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-secondary bg-clip-text text-transparent"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -79,14 +85,15 @@ export const HomePage = () => {
             >
               Discover Amazing Events Near You
             </motion.h1>
-            
-            <motion.p 
+
+            <motion.p
               className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              Connect with like-minded people, learn from industry experts, and create unforgettable experiences at events that matter to you.
+              Connect with like-minded people, learn from industry experts, and
+              create unforgettable experiences at events that matter to you.
             </motion.p>
 
             {/* Search Bar */}
@@ -137,27 +144,27 @@ export const HomePage = () => {
 
         {/* Floating Elements */}
         <motion.div
-          animate={{ 
+          animate={{
             y: [0, -20, 0],
-            rotate: [0, 5, 0]
+            rotate: [0, 5, 0],
           }}
-          transition={{ 
+          transition={{
             duration: 6,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut",
           }}
           className="absolute top-20 left-10 w-20 h-20 bg-primary/10 rounded-full blur-xl"
         />
-        
+
         <motion.div
-          animate={{ 
+          animate={{
             y: [0, 20, 0],
-            rotate: [0, -5, 0]
+            rotate: [0, -5, 0],
           }}
-          transition={{ 
+          transition={{
             duration: 8,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut",
           }}
           className="absolute bottom-20 right-10 w-32 h-32 bg-secondary/10 rounded-full blur-xl"
         />
@@ -202,9 +209,12 @@ export const HomePage = () => {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Events</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Featured Events
+            </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Discover handpicked events that are trending in your area and match your interests.
+              Discover handpicked events that are trending in your area and
+              match your interests.
             </p>
           </motion.div>
 
@@ -252,7 +262,9 @@ export const HomePage = () => {
                       </div>
                       <div className="absolute top-4 right-4">
                         <Badge variant="outline" className="bg-background/80">
-                          {event.price > 0 ? formatCurrency(event.price) : 'Free'}
+                          {event.price > 0
+                            ? formatCurrency(event.price)
+                            : "Free"}
                         </Badge>
                       </div>
                     </div>
@@ -300,7 +312,7 @@ export const HomePage = () => {
           >
             <Button
               size="lg"
-              onClick={() => navigate('/events')}
+              onClick={() => navigate("/events")}
               className="px-8"
             >
               View All Events
@@ -323,27 +335,27 @@ export const HomePage = () => {
               Ready to Create Your Own Event?
             </h2>
             <p className="text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
-              Join thousands of organizers who trust EventHub to manage their events. 
-              Create, promote, and manage your events with ease.
+              Join thousands of organizers who trust EventHub to manage their
+              events. Create, promote, and manage your events with ease.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
                 variant="secondary"
-                onClick={() => navigate('/organizer/create')}
+                onClick={() => navigate("/organizer/create")}
                 className="px-8"
               >
                 Create Event
                 <Plus className="ml-2 h-5 w-5" />
               </Button>
-              <Button
+              {/* <Button
                 size="lg"
                 variant="outline"
-                onClick={() => navigate('/how-it-works')}
+                onClick={() => navigate("/how-it-works")}
                 className="px-8 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
               >
                 Learn More
-              </Button>
+              </Button> */}
             </div>
           </motion.div>
         </div>
@@ -351,4 +363,3 @@ export const HomePage = () => {
     </div>
   );
 };
-
