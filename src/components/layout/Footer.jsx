@@ -47,10 +47,10 @@ export const Footer = () => {
   };
 
   const socialLinks = [
-    { name: "Facebook", icon: Facebook, href: "#" },
-    { name: "Twitter", icon: Twitter, href: "#" },
-    { name: "Instagram", icon: Instagram, href: "#" },
-    { name: "LinkedIn", icon: Linkedin, href: "#" },
+    { name: "Facebook", icon: Facebook, href: "https://facebook.com" },
+    { name: "Twitter", icon: Twitter, href: "https://twitter.com" },
+    { name: "Instagram", icon: Instagram, href: "https://instagram.com" },
+    { name: "LinkedIn", icon: Linkedin, href: "https://linkedIn.com" },
   ];
 
   return (
@@ -143,15 +143,15 @@ export const Footer = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
             <div className="flex items-center space-x-2">
               <Mail className="h-4 w-4" />
-              <span>support@eventhub.com</span>
+              <span>chatarasivenkatesh@gmial.com</span>
             </div>
             <div className="flex items-center space-x-2">
               <Phone className="h-4 w-4" />
-              <span>+1 (555) 123-4567</span>
+              <span>+91 7036386276</span>
             </div>
             <div className="flex items-center space-x-2">
               <MapPin className="h-4 w-4" />
-              <span>San Francisco, CA</span>
+              <span>Vijayawada , A.P</span>
             </div>
           </div>
         </div>
