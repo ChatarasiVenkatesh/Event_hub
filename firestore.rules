@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection - users can read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null; // Allow reading other users for organizer features
+    }
+    
+    // Events collection
+    match /events/{eventId} {
+      // Anyone can read published events
+      allow read: if resource.data.status == 'published';
+      // Authenticated users can read all events
+      allow read: if request.auth != null;
+      // Only organizers can create events
+      allow create: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'organizer';
+      // Only event organizer can update/delete their events
+      allow update, delete: if request.auth != null && 
+        request.auth.uid == resource.data.organizerId;
+    }
+    
+    // Event registrations collection
+    match /registrations/{registrationId} {
+      // Users can read their own registrations
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Event organizers can read registrations for their events
+      allow read: if request.auth != null && 
+        request.auth.uid == get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.organizerId;
+      // Users can create registrations for themselves
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Users can update their own registrations
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Event organizers can update registrations for their events
+      allow update: if request.auth != null && 
+        request.auth.uid == get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.organizerId;
+    }
+    
+    // Categories collection (read-only for all authenticated users)
+    match /categories/{categoryId} {
+      allow read: if request.auth != null;
+    }
+    
+    // Analytics collection (only organizers can read their own analytics)
+    match /analytics/{analyticsId} {
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'organizer' &&
+        request.auth.uid == resource.data.organizerId;
+    }
+  }
+}
+
