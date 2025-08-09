@@ -54,7 +54,7 @@ export const Footer = () => {
   ];
 
   return (
-    <footer className="bg-gradient-to-r from-blue-100 via-teal-100 to-green-100  p-6 border-t">
+    <footer className=" border-t">
       <div className="container  mx-auto px-4 py-12">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
