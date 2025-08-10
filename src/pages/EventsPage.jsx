@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import toast from "react-hot-toast";
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Search, 
-  Filter, 
-  Calendar, 
-  MapPin, 
-  Users, 
+import {
+  Search,
+  Filter,
+  Calendar,
+  MapPin,
+  Users,
   Clock,
   SlidersHorizontal,
   X,
@@ -23,12 +25,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getMockEvents } from '@/data/mockData';
 import { formatDate, formatCurrency, truncateText } from '@/lib/utils';
 import { EVENT_CATEGORIES, EVENT_TYPES } from '@/lib/constants';
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export const EventsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, userProfile } = useAuth();
-  
+
   // State
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
@@ -39,19 +43,97 @@ export const EventsPage = () => {
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [sortBy, setSortBy] = useState('date');
   const [showFilters, setShowFilters] = useState(false);
+  const [showWaitingList, setShowWaitingList] = useState(false);
+
+
+
+const handleRegister = async (eventId) => {
+  if (!user) {
+    toast.error("Please sign in to register for events.");
+    return;
+  }
+
+  try {
+    const eventRef = doc(db, "events", eventId);
+    const eventSnap = await getDoc(eventRef);
+
+    if (!eventSnap.exists()) {
+      toast.error("Event not found.");
+      return;
+    }
+
+    const eventData = eventSnap.data();
+
+    // ✅ 1) Check if event date-time is in the past
+    const eventDateTime = eventData.date?.toDate ? eventData.date.toDate() : new Date(eventData.date);
+    const now = new Date();
+    if (eventDateTime.getTime() < now.getTime()) {
+      toast.error("This event has already started or ended. Please pick a future event.");
+      return;
+    }
+
+    // ✅ 2) Check if user is the organizer
+    if (eventData.organizerId === user.uid) {
+      toast.error("You are the organizer of this event.");
+      return;
+    }
+
+    // ✅ 3) Check if user already registered
+    if (Array.isArray(eventData.attendees) && eventData.attendees.includes(user.uid)) {
+      toast.error("You have already registered for this event.");
+      return;
+    }
+
+    // ✅ 4) Check capacity
+    if (eventData.capacity > 0) {
+      await updateDoc(eventRef, {
+        capacity: eventData.capacity - 1,
+        attendees: arrayUnion(user.uid)
+      });
+
+      toast.success("You are registered for the event!");
+    } else {
+      setShowWaitingList(true);
+    }
+  } catch (error) {
+    console.error("Error registering:", error);
+    toast.error("Failed to register for the event.");
+  }
+};
+
+
 
   // Load events
+
+
   useEffect(() => {
-    const loadEvents = async () => {
-      setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate loading
-      const mockEvents = getMockEvents();
-      setEvents(mockEvents);
+    const eventsRef = collection(db, 'events');
+
+    const unsubscribe = onSnapshot(eventsRef, (snapshot) => {
+      const eventsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      // Sort by newest createdAt
+      // Sort by newest createdAt
+      const toMillis = (t) => {
+        if (!t) return 0;
+        if (typeof t.seconds === 'number') return t.seconds * 1000;
+        if (typeof t.toDate === 'function') return t.toDate().getTime();
+        return new Date(t).getTime() || 0;
+      };
+
+      eventsData.sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
+      ;
+
+      setEvents(eventsData);
       setLoading(false);
-    };
-    
-    loadEvents();
+    });
+
+    return () => unsubscribe();
   }, []);
+
 
   // Apply filters
   useEffect(() => {
@@ -83,7 +165,7 @@ export const EventsPage = () => {
     }
 
     // Price range filter
-    filtered = filtered.filter(event => 
+    filtered = filtered.filter(event =>
       event.price >= priceRange[0] && event.price <= priceRange[1]
     );
 
@@ -159,8 +241,8 @@ export const EventsPage = () => {
       {/* Event Type Filter */}
       <div>
         <h4 className="font-medium mb-3">Event Type</h4>
-        <select 
-          value={selectedType} 
+        <select
+          value={selectedType}
           onChange={(e) => setSelectedType(e.target.value)}
           className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm"
         >
@@ -201,7 +283,7 @@ export const EventsPage = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-3xl font-bold mb-4"
@@ -231,8 +313,8 @@ export const EventsPage = () => {
             </form>
 
             {/* Sort Dropdown */}
-            <select 
-              value={sortBy} 
+            <select
+              value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="w-full lg:w-48 px-3 py-2 border border-input bg-background rounded-md text-sm"
             >
@@ -271,8 +353,8 @@ export const EventsPage = () => {
               {searchQuery && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   Search: {searchQuery}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
+                  <X
+                    className="h-3 w-3 cursor-pointer"
                     onClick={() => setSearchQuery('')}
                   />
                 </Badge>
@@ -280,8 +362,8 @@ export const EventsPage = () => {
               {selectedCategory && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   {selectedCategory}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
+                  <X
+                    className="h-3 w-3 cursor-pointer"
                     onClick={() => setSelectedCategory('')}
                   />
                 </Badge>
@@ -289,8 +371,8 @@ export const EventsPage = () => {
               {selectedType && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   {selectedType === 'online' ? 'Online' : 'In-Person'}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
+                  <X
+                    className="h-3 w-3 cursor-pointer"
                     onClick={() => setSelectedType('')}
                   />
                 </Badge>
@@ -347,7 +429,7 @@ export const EventsPage = () => {
                 </div>
 
                 {/* Events Grid */}
-                <motion.div 
+                <motion.div
                   layout
                   className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
                 >
@@ -408,10 +490,11 @@ export const EventsPage = () => {
                             </div>
                             <Button
                               className="w-full mt-4"
-                              onClick={() => navigate(`/events/${event.id}`)}
+                              onClick={() => handleRegister(event.id)}
                             >
-                              View Details
+                              Register
                             </Button>
+
                           </CardContent>
                         </Card>
                       </motion.div>
@@ -423,6 +506,27 @@ export const EventsPage = () => {
           </div>
         </div>
       </div>
+      return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          {/* ... all your existing JSX ... */}
+        </div>
+
+        {/* Waiting List Modal */}
+        {showWaitingList && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+              <h2 className="text-lg font-semibold mb-2">Event Full</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                This event has reached its maximum capacity. You can join the waiting list.
+              </p>
+              <Button onClick={() => setShowWaitingList(false)}>Close</Button>
+            </div>
+          </div>
+        )}
+      </div>
+      );
+
     </div>
   );
 };

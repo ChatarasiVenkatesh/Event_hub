@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { collection, query, where, getDocs } from "firebase/firestore";
+
+import { db } from "@/lib/firebase";
+
+
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Calendar, 
-  Users, 
-  MapPin, 
-  Clock, 
+import {
+  Calendar,
+  Users,
+  MapPin,
+  Clock,
   TrendingUp,
   Plus,
   Edit,
@@ -35,38 +40,70 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getMockEvents, getMockOrganizerEvents, getMockDetailedEventRegistrations } from '@/data/mockData';
 import { formatDate, formatCurrency, isEventUpcoming, isEventPast } from '@/lib/utils';
 
+
 export const OrganizerDashboard = () => {
   const { user, userProfile } = useAuth();
   const navigate = useNavigate();
-  
+
   // State
   const [events, setEvents] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [totalEvents, setTotalEvents] = useState(0);
+  const [totalRegistrations, setTotalRegistrations] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [averageAttendanceRate, setAverageAttendanceRate] = useState(0);
 
-  // Load data
+
+
+
+  // Load data from Firebase
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const organizerEvents = getMockOrganizerEvents(user?.uid || 'organizer1');
-      const allRegistrations = [];
-      
-      // Get registrations for each event
-      organizerEvents.forEach(event => {
-        const eventRegistrations = getMockDetailedEventRegistrations(event.id);
-        allRegistrations.push(...eventRegistrations);
-      });
-      
-      setEvents(organizerEvents);
-      setRegistrations(allRegistrations);
+      try {
+        const eventsRef = collection(db, "events");
+        const eventsQuery = query(eventsRef, where("organizerId", "==", user?.uid));
+        const eventsSnapshot = await getDocs(eventsQuery);
+        const eventsData = eventsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        setEvents(eventsData);
+
+        // Total counts
+        const totalEventsCount = eventsData.length;
+        const totalAttendees = eventsData.reduce((sum, e) => sum + (e.attendees?.length || 0), 0);
+        const totalCapacity = eventsData.reduce((sum, e) => sum + (e.capacity || 0), 0);
+        const totalRev = eventsData.reduce(
+          (sum, e) => sum + ((e.attendees?.length || 0) * (e.price || 0)),
+          0
+        );
+
+        // Calculate overall average attendance rate
+        let avgAttendanceRate = 0;
+        if (totalCapacity > 0) {
+          avgAttendanceRate = (totalAttendees / totalCapacity) * 100;
+        }
+
+        setTotalEvents(totalEventsCount);
+        setTotalRegistrations(totalAttendees);
+        setTotalRevenue(totalRev);
+        setAverageAttendanceRate(avgAttendanceRate.toFixed(2)); // keep 2 decimals
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+      }
       setLoading(false);
     };
-    
-    loadData();
+
+    if (user?.uid) {
+      loadData();
+    }
   }, [user]);
+
+
 
   // Filter events based on search
   const filteredEvents = events.filter(event =>
@@ -80,10 +117,8 @@ export const OrganizerDashboard = () => {
   const draftEvents = filteredEvents.filter(event => event.status === 'draft');
 
   // Analytics data
-  const totalRevenue = registrations.reduce((sum, reg) => {
-    const event = events.find(e => e.id === reg.eventId);
-    return sum + (event?.price || 0);
-  }, 0);
+
+
 
   const stats = [
     {
@@ -95,8 +130,8 @@ export const OrganizerDashboard = () => {
       change: '+12%'
     },
     {
-      title: 'Total Registrations',
-      value: registrations.length,
+      title: "Total Registrations",
+      value: totalRegistrations,
       icon: Users,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
@@ -168,7 +203,7 @@ export const OrganizerDashboard = () => {
                   {userProfile?.name?.charAt(0)?.toUpperCase() || 'O'}
                 </AvatarFallback>
               </Avatar>
-              <Button onClick={() => navigate('/create-event')}>
+              <Button onClick={() => navigate('/organizer/create')}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create Event
               </Button>
@@ -235,8 +270,8 @@ export const OrganizerDashboard = () => {
                     <div className="text-center py-8">
                       <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                       <p className="text-muted-foreground">No events created yet</p>
-                      <Button 
-                        className="mt-4" 
+                      <Button
+                        className="mt-4"
                         onClick={() => navigate('/create-event')}
                       >
                         Create Your First Event
@@ -260,15 +295,7 @@ export const OrganizerDashboard = () => {
                           </Badge>
                         </div>
                       ))}
-                      {events.length > 3 && (
-                        <Button 
-                          variant="ghost" 
-                          className="w-full"
-                          onClick={() => navigate('/dashboard?tab=events')}
-                        >
-                          View All ({events.length})
-                        </Button>
-                      )}
+                      { }
                     </div>
                   )}
                 </CardContent>
@@ -289,22 +316,23 @@ export const OrganizerDashboard = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Average Attendance Rate</span>
-                      <span className="text-sm font-bold">78%</span>
+                      <span className="text-sm font-bold">{averageAttendanceRate}%</span>
                     </div>
-                    <Progress value={78} />
-                    
+                    <Progress value={averageAttendanceRate} />
+
+
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Event Completion Rate</span>
-                      <span className="text-sm font-bold">92%</span>
+                      <span className="text-sm font-bold">100%</span>
                     </div>
-                    <Progress value={92} />
-                    
+                    <Progress value={100} />
+
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Customer Satisfaction</span>
                       <span className="text-sm font-bold">4.8/5</span>
                     </div>
                     <Progress value={96} />
-                    
+
                     <div className="pt-4 border-t">
                       <div className="grid grid-cols-2 gap-4 text-center">
                         <div>
@@ -329,31 +357,31 @@ export const OrganizerDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Button 
+                  <Button
                     className="h-20 flex-col space-y-2"
                     onClick={() => navigate('/create-event')}
                   >
                     <Plus className="h-6 w-6" />
                     <span>Create Event</span>
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="h-20 flex-col space-y-2"
                     onClick={() => navigate('/dashboard?tab=registrations')}
                   >
                     <Users className="h-6 w-6" />
                     <span>View Registrations</span>
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="h-20 flex-col space-y-2"
                     onClick={() => navigate('/dashboard?tab=analytics')}
                   >
                     <BarChart3 className="h-6 w-6" />
                     <span>Analytics</span>
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="h-20 flex-col space-y-2"
                     onClick={() => navigate('/profile')}
                   >
@@ -529,7 +557,7 @@ export const OrganizerDashboard = () => {
                     {events.map((event) => {
                       const eventRegistrations = registrations.filter(reg => reg.eventId === event.id);
                       if (eventRegistrations.length === 0) return null;
-                      
+
                       return (
                         <Card key={event.id} className="p-4">
                           <div className="flex justify-between items-center mb-4">

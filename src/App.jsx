@@ -7,6 +7,7 @@ import { EventsPage } from '@/pages/EventsPage';
 import { UserDashboard } from '@/pages/UserDashboard';
 import { OrganizerDashboard } from '@/pages/OrganizerDashboardSimple';
 import { ProtectedRoute, UserRoute, OrganizerRoute } from '@/components/auth/ProtectedRoute';
+import { CreateEvent } from '@/pages/CreateEvent';
 import './App.css';
 
 // Placeholder components (to be implemented in later phases)
@@ -48,7 +49,7 @@ function App() {
             } />
             <Route path="organizer/create" element={
               <OrganizerRoute>
-                <CreateEventPage />
+                <CreateEvent />
               </OrganizerRoute>
             } />
             <Route path="organizer/events/:id/edit" element={

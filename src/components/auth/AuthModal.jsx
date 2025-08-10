@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Login } from '@/pages/Login';
 import { Signup } from '@/pages/Signup';
 
 export const AuthModal = ({ isOpen, onClose, defaultMode = 'login' }) => {
   const [mode, setMode] = useState(defaultMode);
+
+  // Add useEffect to sync mode with defaultMode prop
+  useEffect(() => {
+    setMode(defaultMode);
+  }, [defaultMode]);
 
   const handleSuccess = () => {
     onClose();
@@ -17,20 +21,15 @@ export const AuthModal = ({ isOpen, onClose, defaultMode = 'login' }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent 
+        className="max-w-4xl max-h-[90vh] overflow-y-auto p-0" 
+        hideCloseButton={true} // Add this prop to hide close button
+      >
         <DialogHeader>
           <DialogTitle className="sr-only">{mode === 'login' ? 'Sign In' : 'Sign Up'}</DialogTitle>
         </DialogHeader>
         
         <div className="relative">
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 z-10 p-2 rounded-full "
-          >
-            <X className="h-4 w-4" />
-          </button>
-
           {/* Form Container */}
           <div className="p-6">
             <AnimatePresence mode="wait">

@@ -41,6 +41,7 @@ export const Signup = ({ onSuccess, onSwitchToLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [selectedInterests, setSelectedInterests] = useState([]);
+  const [signupError, setSignupError] = useState(null);
   const { signup, loading } = useAuth();
 
   const {
@@ -60,6 +61,7 @@ export const Signup = ({ onSuccess, onSwitchToLogin }) => {
 
   const onSubmit = async (data) => {
     try {
+      setSignupError(null); // Clear any previous errors
       const userData = {
         ...data,
         interests: selectedRole === USER_ROLES.USER ? selectedInterests : [],
@@ -68,6 +70,25 @@ export const Signup = ({ onSuccess, onSwitchToLogin }) => {
       onSuccess?.();
     } catch (error) {
       console.error("Signup failed:", error);
+      if (error.code === 'auth/email-already-in-use') {
+        setSignupError(
+          <div className="text-sm text-destructive space-y-2">
+            <p>An account with this email already exists.</p>
+            <div className="flex gap-2 items-center">
+              <button
+                type="button"
+                onClick={onSwitchToLogin}
+                className="text-primary hover:underline font-medium"
+              >
+                Sign in instead
+              </button>
+              <span>or try a different Account Type</span>
+            </div>
+          </div>
+        );
+      } else {
+        setSignupError("Something went wrong. Please try again.");
+      }
     }
   };
 
@@ -96,6 +117,17 @@ export const Signup = ({ onSuccess, onSwitchToLogin }) => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Show signup error if exists */}
+            {signupError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-destructive/10 text-destructive rounded-lg p-4"
+              >
+                {signupError}
+              </motion.div>
+            )}
+
             {/* Basic Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -208,36 +240,41 @@ export const Signup = ({ onSuccess, onSwitchToLogin }) => {
                 onValueChange={(value) => setValue("role", value)}
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
               >
-                <div className="flex items-center space-x-2 border rounded-lg p-4 relative">
+                {/* Event Attendee - Full box clickable */}
+                <label 
+                  htmlFor="user"
+                  className="flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-slate-50"
+                >
                   <RadioGroupItem
                     value={USER_ROLES.USER}
                     id="user"
                     className="border-blue-500 text-blue-500 focus:ring-blue-500"
                   />
                   <div className="flex-1">
-                    <Label htmlFor="user" className="font-medium">
-                      Event Attendee
-                    </Label>
+                    <span className="font-medium block">Event Attendee</span>
                     <p className="text-sm text-muted-foreground">
                       Discover and attend amazing events
                     </p>
                   </div>
-                </div>
-                <div className="flex items-center space-x-2 border rounded-lg p-4 relative">
+                </label>
+
+                {/* Event Organizer - Full box clickable */}
+                <label 
+                  htmlFor="organizer"
+                  className="flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-slate-50"
+                >
                   <RadioGroupItem
                     value={USER_ROLES.ORGANIZER}
                     id="organizer"
                     className="border-blue-500 text-blue-500 focus:ring-blue-500"
                   />
                   <div className="flex-1">
-                    <Label htmlFor="organizer" className="font-medium">
-                      Event Organizer
-                    </Label>
+                    <span className="font-medium block">Event Organizer</span>
                     <p className="text-sm text-muted-foreground">
                       Create and manage your own events
                     </p>
                   </div>
-                </div>
+                </label>
               </RadioGroup>
               {errors.role && (
                 <p className="text-sm text-destructive">{errors.role.message}</p>
@@ -325,11 +362,7 @@ export const Signup = ({ onSuccess, onSwitchToLogin }) => {
             <Button
               type="submit"
               className="w-full"
-              disabled={
-                loading ||
-                (selectedRole === USER_ROLES.USER &&
-                  selectedInterests.length < 3)
-              }
+              disabled={loading}
             >
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
