@@ -1,20 +1,21 @@
-import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Calendar, 
-  User, 
-  LogOut, 
-  Menu, 
-  X, 
-  Settings, 
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import ThemeToggle from "../ui/ThemeToggle";
+import {
+  Calendar,
+  User,
+  LogOut,
+  Menu,
+  X,
+  Settings,
   Plus,
   Search,
   Bell,
-  Home
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+  Home,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,10 +23,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
-import { USER_ROLES } from '@/lib/constants';
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import { USER_ROLES } from "@/lib/constants";
 
 export const Navbar = ({ onAuthClick }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -35,18 +36,28 @@ export const Navbar = ({ onAuthClick }) => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/');
+    navigate("/");
   };
 
   const navItems = [
-    { name: 'Home', path: '/', icon: Home, show: true },
-    { name: 'Events', path: '/events', icon: Calendar, show: true },
-    { name: 'Dashboard', path: isOrganizer() ? '/organizer' : '/dashboard', icon: User, show: !!user },
-    { name: 'Create Event', path: '/organizer/create', icon: Plus, show: isOrganizer() },
+    { name: "Home", path: "/", icon: Home, show: true },
+    { name: "Events", path: "/events", icon: Calendar, show: true },
+    {
+      name: "Dashboard",
+      path: isOrganizer() ? "/organizer" : "/dashboard",
+      icon: User,
+      show: !!user,
+    },
+    {
+      name: "Create Event",
+      path: "/organizer/create",
+      icon: Plus,
+      show: isOrganizer(),
+    },
   ];
 
   const isActivePath = (path) => {
-    if (path === '/') return location.pathname === '/';
+    if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
 
@@ -70,22 +81,23 @@ export const Navbar = ({ onAuthClick }) => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            {navItems.map((item) => (
-              item.show && (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActivePath(item.path)
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.name}</span>
-                </Link>
-              )
-            ))}
+            {navItems.map(
+              (item) =>
+                item.show && (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      isActivePath(item.path)
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.name}</span>
+                  </Link>
+                )
+            )}
           </div>
 
           {/* Right Side Actions */}
@@ -94,12 +106,12 @@ export const Navbar = ({ onAuthClick }) => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/events')}
+              onClick={() => navigate("/events")}
               className="hidden sm:flex"
             >
               <Search className="h-4 w-4" />
             </Button>
-
+            <ThemeToggle />
             {/* Notifications */}
             {user && (
               <Button variant="ghost" size="sm" className="relative">
@@ -117,11 +129,17 @@ export const Navbar = ({ onAuthClick }) => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={userProfile?.profilePicture} alt={userProfile?.name} />
+                      <AvatarImage
+                        src={userProfile?.profilePicture}
+                        alt={userProfile?.name}
+                      />
                       <AvatarFallback>
-                        {userProfile?.name?.charAt(0)?.toUpperCase() || 'U'}
+                        {userProfile?.name?.charAt(0)?.toUpperCase() || "U"}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -130,22 +148,28 @@ export const Navbar = ({ onAuthClick }) => {
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">
-                        {userProfile?.name || 'User'}
+                        {userProfile?.name || "User"}
                       </p>
                       <p className="text-xs leading-none text-muted-foreground">
                         {user.email}
                       </p>
                       <Badge variant="secondary" className="w-fit text-xs">
-                        {userProfile?.role === USER_ROLES.ORGANIZER ? 'Organizer' : 'Attendee'}
+                        {userProfile?.role === USER_ROLES.ORGANIZER
+                          ? "Organizer"
+                          : "Attendee"}
                       </Badge>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate(isOrganizer() ? '/organizer' : '/dashboard')}>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      navigate(isOrganizer() ? "/organizer" : "/dashboard")
+                    }
+                  >
                     <User className="mr-2 h-4 w-4" />
                     <span>Dashboard</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Profile Settings</span>
                   </DropdownMenuItem>
@@ -158,17 +182,10 @@ export const Navbar = ({ onAuthClick }) => {
               </DropdownMenu>
             ) : (
               <div className="hidden sm:flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  onClick={() => onAuthClick?.('login')}
-                >
+                <Button variant="ghost" onClick={() => onAuthClick?.("login")}>
                   Sign In
                 </Button>
-                <Button
-                  onClick={() => onAuthClick?.('signup')}
-                >
-                  Sign Up
-                </Button>
+                <Button onClick={() => onAuthClick?.("signup")}>Sign Up</Button>
               </div>
             )}
 
@@ -179,7 +196,11 @@ export const Navbar = ({ onAuthClick }) => {
               className="md:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {isMobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
             </Button>
           </div>
         </div>
@@ -189,37 +210,38 @@ export const Navbar = ({ onAuthClick }) => {
           {isMobileMenuOpen && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
               className="md:hidden border-t"
             >
               <div className="py-4 space-y-2">
-                {navItems.map((item) => (
-                  item.show && (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                        isActivePath(item.path)
-                          ? 'bg-primary text-primary-foreground'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                      }`}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.name}</span>
-                    </Link>
-                  )
-                ))}
-                
+                {navItems.map(
+                  (item) =>
+                    item.show && (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                          isActivePath(item.path)
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </Link>
+                    )
+                )}
+
                 {!user && (
                   <div className="pt-4 space-y-2">
                     <Button
                       variant="ghost"
                       className="w-full justify-start"
                       onClick={() => {
-                        onAuthClick?.('login');
+                        onAuthClick?.("login");
                         setIsMobileMenuOpen(false);
                       }}
                     >
@@ -228,7 +250,7 @@ export const Navbar = ({ onAuthClick }) => {
                     <Button
                       className="w-full justify-start"
                       onClick={() => {
-                        onAuthClick?.('signup');
+                        onAuthClick?.("signup");
                         setIsMobileMenuOpen(false);
                       }}
                     >
@@ -244,4 +266,3 @@ export const Navbar = ({ onAuthClick }) => {
     </nav>
   );
 };
-
