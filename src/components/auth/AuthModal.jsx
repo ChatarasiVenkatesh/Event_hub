@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -7,11 +7,6 @@ import { Signup } from '@/pages/Signup';
 
 export const AuthModal = ({ isOpen, onClose, defaultMode = 'login' }) => {
   const [mode, setMode] = useState(defaultMode);
-
-  // Sync mode with defaultMode prop
-  useEffect(() => {
-    setMode(defaultMode);
-  }, [defaultMode, isOpen]);
 
   const handleSuccess = () => {
     onClose();
@@ -29,7 +24,12 @@ export const AuthModal = ({ isOpen, onClose, defaultMode = 'login' }) => {
         
         <div className="relative">
           {/* Close Button */}
-         
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 p-2 rounded-full "
+          >
+            <X className="h-4 w-4" />
+          </button>
 
           {/* Form Container */}
           <div className="p-6">

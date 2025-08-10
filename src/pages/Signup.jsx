@@ -208,8 +208,12 @@ export const Signup = ({ onSuccess, onSwitchToLogin }) => {
                 onValueChange={(value) => setValue("role", value)}
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
               >
-                <div className="flex items-center space-x-2 border rounded-lg p-4 hover:bg-muted/50">
-                  <RadioGroupItem value={USER_ROLES.USER} id="user" />
+                <div className="flex items-center space-x-2 border rounded-lg p-4 relative">
+                  <RadioGroupItem
+                    value={USER_ROLES.USER}
+                    id="user"
+                    className="border-blue-500 text-blue-500 focus:ring-blue-500"
+                  />
                   <div className="flex-1">
                     <Label htmlFor="user" className="font-medium">
                       Event Attendee
@@ -219,8 +223,12 @@ export const Signup = ({ onSuccess, onSwitchToLogin }) => {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2 border rounded-lg p-4 hover:bg-muted/50">
-                  <RadioGroupItem value={USER_ROLES.ORGANIZER} id="organizer" />
+                <div className="flex items-center space-x-2 border rounded-lg p-4 relative">
+                  <RadioGroupItem
+                    value={USER_ROLES.ORGANIZER}
+                    id="organizer"
+                    className="border-blue-500 text-blue-500 focus:ring-blue-500"
+                  />
                   <div className="flex-1">
                     <Label htmlFor="organizer" className="font-medium">
                       Event Organizer
@@ -232,9 +240,7 @@ export const Signup = ({ onSuccess, onSwitchToLogin }) => {
                 </div>
               </RadioGroup>
               {errors.role && (
-                <p className="text-sm text-destructive">
-                  {errors.role.message}
-                </p>
+                <p className="text-sm text-destructive">{errors.role.message}</p>
               )}
             </div>
 
